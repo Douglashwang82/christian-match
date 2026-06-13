@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================================
+   Liquid Glass 設計系統 (White / Silver / Gold)
+   ---------------------------------------------------------------------
+   核心概念：
+   1. 半透明玻璃面板 (frosted glass) ＝ backdrop-filter blur + 低不透明白底
+   2. 邊框用「銀→金」漸層，模擬金屬折射的細邊
+   3. 面板內緣高光 (inner highlight) 製造「液態」厚度感
+   4. 背景 aurora 光斑緩慢流動，透過玻璃折射出微光流動感
+   ===================================================================== */
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --silver-line: rgba(167, 176, 192, 0.45);
+  --gold: #c9a24b;
+  --gold-soft: rgba(201, 162, 75, 0.35);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply min-h-dvh text-silver-700 antialiased;
+    /* 珍珠白漸層底色，帶極淡的銀色冷調 */
+    background:
+      radial-gradient(1200px 800px at 12% -10%, #ffffff 0%, transparent 55%),
+      radial-gradient(1000px 700px at 100% 0%, #f3f5f9 0%, transparent 50%),
+      linear-gradient(180deg, #fbfbfd 0%, #eef1f6 100%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  /* ---- 流動光斑背景：放在頁面最底層 ---- */
+  .aurora-field {
+    @apply pointer-events-none fixed inset-0 -z-10 overflow-hidden;
+  }
+  .aurora-blob {
+    @apply absolute rounded-full blur-3xl opacity-60 mix-blend-screen;
+    will-change: transform;
+  }
+
+  /* ---- 玻璃面板：基礎 ---- */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 8px 32px rgba(120, 130, 150, 0.18),
+      inset 0 1px 1px rgba(255, 255, 255, 0.7);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 24px 64px rgba(120, 130, 150, 0.22),
+      inset 0 1px 1px rgba(255, 255, 255, 0.75);
+  }
+
+  /* ---- 銀→金漸層描邊（用 mask 做出只有邊框的效果）---- */
+  .glass-ring {
+    position: relative;
+  }
+  .glass-ring::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(167, 176, 192, 0.55) 35%,
+      rgba(201, 162, 75, 0.65) 75%,
+      rgba(255, 255, 255, 0.85) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* ---- 卡片頂部掠過的高光（滑動時隱約閃過的液態反光）---- */
+  .glass-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.35) 45%,
+      rgba(255, 255, 255, 0.05) 60%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .glass-sheen:hover::after {
+    opacity: 1;
+    animation: shimmer 1.6s ease forwards;
+  }
+
+  /* ---- 金色主行動按鈕 ---- */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-medium text-white transition-all;
+    background: linear-gradient(135deg, #e0c677 0%, #c9a24b 55%, #a9853a 100%);
+    box-shadow:
+      0 8px 24px rgba(201, 162, 75, 0.4),
+      inset 0 1px 1px rgba(255, 255, 255, 0.5);
+  }
+  .btn-gold:hover {
+    box-shadow:
+      0 10px 30px rgba(201, 162, 75, 0.55),
+      inset 0 1px 1px rgba(255, 255, 255, 0.6);
+    transform: translateY(-1px);
+  }
+
+  /* ---- 銀色次要按鈕（玻璃感）---- */
+  .btn-silver {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-medium text-silver-700 transition-all;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--silver-line);
+  }
+  .btn-silver:hover {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  /* ---- 金色漸層文字（標題重點字）---- */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #d4b254, #c9a24b 50%, #a9853a);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* 尊重使用者「減少動態效果」的系統偏好（無障礙）*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
