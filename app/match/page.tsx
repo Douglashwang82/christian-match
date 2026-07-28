@@ -19,7 +19,7 @@ export const metadata = {
 export default function MatchPage() {
   return (
     <main className="relative min-h-dvh pb-10">
-      <AppHeader />
+      <AppHeader active="match" />
 
       <section className="mx-auto flex max-w-2xl flex-col items-center px-4 pt-6">
         <div className="mb-6 text-center">

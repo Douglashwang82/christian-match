@@ -5,7 +5,7 @@ import { Cross, MessageCircleHeart, UserRound } from "lucide-react";
  * AppHeader — 登入後主功能區的頂部玻璃導覽列。
  * 桌機固定在頂部，手機端維持輕量、不喧賓奪主。
  */
-export function AppHeader() {
+export function AppHeader({ active }: { active?: "match" | "messages" }) {
   return (
     <header className="sticky top-0 z-40 px-4 pt-4">
       <div className="glass glass-ring mx-auto flex max-w-2xl items-center justify-between rounded-full px-5 py-3">
@@ -19,10 +19,10 @@ export function AppHeader() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          <NavIcon href="/match" label="探索" active>
+          <NavIcon href="/match" label="探索" active={active === "match"}>
             <UserRound className="h-5 w-5" />
           </NavIcon>
-          <NavIcon href="/messages" label="訊息">
+          <NavIcon href="/messages" label="訊息" active={active === "messages"}>
             <MessageCircleHeart className="h-5 w-5" />
           </NavIcon>
         </nav>

@@ -4,8 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { ActionBar } from "@/components/match/ActionBar";
+import { MatchModal } from "@/components/match/MatchModal";
 import { SwipeCard } from "@/components/match/SwipeCard";
 import type { MatchProfile, SwipeDirection } from "@/lib/types";
+
+// Demo：對高契合度對象表達「想認識」時，模擬「彼此都想認識」的配對成功。
+// 正式環境改為後端雙向 like 判定。
+const MUTUAL_MATCH_THRESHOLD = 88;
 
 interface SwipeDeckProps {
   profiles: MatchProfile[];
@@ -26,11 +31,16 @@ export function SwipeDeck({ profiles }: SwipeDeckProps) {
   const [history, setHistory] = useState<SwipeRecord[]>([]);
   // 點擊操作時，告訴最上層卡片要往哪個方向飛出
   const [programmaticExit, setProgrammaticExit] = useState<SwipeDirection | null>(null);
+  // 配對成功時要慶祝的對象
+  const [matched, setMatched] = useState<MatchProfile | null>(null);
 
   const advance = useCallback((direction: SwipeDirection, profile: MatchProfile) => {
     setHistory((h) => [...h, { profile, direction }]);
     setCursor((c) => c + 1);
     setProgrammaticExit(null);
+    if (direction === "right" && profile.compatibility >= MUTUAL_MATCH_THRESHOLD) {
+      setMatched(profile);
+    }
   }, []);
 
   const handleAction = useCallback(
@@ -89,6 +99,12 @@ export function SwipeDeck({ profiles }: SwipeDeckProps) {
           canUndo={history.length > 0}
         />
       )}
+
+      <AnimatePresence>
+        {matched && (
+          <MatchModal profile={matched} onContinue={() => setMatched(null)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
